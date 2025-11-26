@@ -1,5 +1,5 @@
 import sqlite3
-import hashlib
+import pathlib
 import requests
 import logging
 import sys
@@ -31,37 +31,47 @@ class Downloader:
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
 
-        # Create tables
-        logging.info("Setting tables for DB...")
-        # For foreign keys
-        self.cursor.execute("PRAGMA foreign_keys = ON")
-
-        self.cursor.execute(
-            '''
-            CREATE TABLE IF NOT EXISTS fictions (
-                fiction_id  INTEGER PRIMARY KEY,  
-                url         TEXT UNIQUE,
-                cover       TEXT,
-                title       TEXT NOT NULL,
-                author      TEXT
-            )
-            '''
+        #Checking if table exists
+        req = self.conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='chapters'"
         )
-        
-        self.cursor.execute(
-            '''            
-            CREATE TABLE IF NOT EXISTS chapters (
-                chapter_id  INTEGER PRIMARY KEY,  
-                fiction_id  INTEGER NOT NULL,  
-                url         TEXT UNIQUE,              
-                date        TEXT,              
-                title,      TEXT,     
-                content     TEXT,     
+        table_exists = req.fetchone() is not None
 
-                FOREIGN KEY (fiction_id) REFERENCES fictions(fiction_id) ON DELETE CASCADE       
+        if not table_exists:
+            logging.warning("DB doesn't exist!")
+
+            # Create tables
+            logging.info("Setting tables for DB...")
+            # For foreign keys
+            self.conn.execute("PRAGMA foreign_keys = ON")
+
+            self.conn.execute(
+                '''
+                CREATE TABLE fictions (
+                    fiction_id  TEXT PRIMARY KEY,  
+                    url         TEXT UNIQUE,
+                    cover       TEXT,
+                    title       TEXT NOT NULL,
+                    author      TEXT
+                )
+                '''
             )
-            '''
-        )
+            
+            self.conn.execute(
+                '''            
+                CREATE TABLE chapters (
+                    chapter_id  TEXT PRIMARY KEY,  
+                    fiction_id  TEXT NOT NULL,  
+                    url         TEXT UNIQUE,              
+                    date        TEXT,              
+                    title       TEXT,     
+                    content     TEXT,     
+
+                    FOREIGN KEY (fiction_id) REFERENCES fictions(fiction_id) ON DELETE CASCADE       
+                )
+                '''
+            )
+            self.conn.commit()
 
         # Checking if URL is correct and getting fiction ID
         logging.info("Checking if given URL is correct...")
@@ -85,9 +95,9 @@ class Downloader:
         self.author_name = soup.find("div", class_="portlet-body").find("a").text
         self.fiction_title = soup.find("div", class_="fic-header").find("h1").text
 
-        logging.info("Writing to DB...")
+        logging.info("Writing fiction info to DB...")
         # Writing to DB
-        self.cursor.execute(
+        self.conn.execute(
             """
             INSERT OR REPLACE INTO fictions (fiction_id, url, title, author) VALUES (?, ?, ?, ?)
             """,
@@ -112,32 +122,72 @@ class Downloader:
             return [chap.split("/")[5] for chap in chapter_list]
 
     def get_chapter(self, chapter_id, skip_span = True):
+        # Func to get info from DB
+        def get_from_SQL():
+            req = self.conn.execute(
+                f"""
+                SELECT *
+                FROM chapters 
+                WHERE chapter_id = ?
+                """,
+                (chapter_id, )
+            )
+
+            return req.fetchone()
+
+
+
         logging.info(f"Getting chapter with ID {chapter_id}...")
 
-        self.cursor.execute(
-            """
-            SELECT 1 FROM chapters WHERE chapter_id = ?
+        req = self.conn.execute(
+            f"""
+            SELECT *
+            FROM chapters 
+            WHERE chapter_id = ?
             """,
-            (chapter_id)
+            (chapter_id, )
         )
-        if self.cursor.fetchone() == None:
+
+        if req.fetchone() == None:
             logging.warning("Chapter is not in DB!")
 
-            chap_url = self.fiction_url + f"/chapter/{chapter_id}"
+            chapter_url = self.fiction_url + f"/chapter/{chapter_id}"
+            # Trying 4 times
             for _ in range(4):
                 try: 
-                    soup = BeautifulSoup(requests.get(chap_url).content)
+                    soup = BeautifulSoup(requests.get(chapter_url).content, features="html.parser")
                     break
                 except:
                     pass
             
             content = soup.find("div", class_="chapter-content")
 
-            for span in content.find_all("span"):
-                span.decompose()
+            if skip_span:
+                # Removing "Hey, that's not RoyalRoad!"
+                logging.info("Removing anti-piracy spans...")
+                for span in content.find_all("span"):
+                    span.decompose()
+
+            release_date = soup.find("time")["datetime"][0:10]
+            title = soup.find("h1").text
+            
+            # Writing to DB
+            logging.info("Writing chapter to DB...")
+
+            self.cursor.execute(
+                """
+                INSERT OR REPLACE INTO chapters (chapter_id, fiction_id, url, date, title, content) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (chapter_id, self.fiction_id, chapter_url, release_date, title, str(content))
+            ) 
+
+            self.conn.commit()
+            
+            return get_from_SQL()
         else:
             logging.info("Chapter is in DB, getting it...")
 
+            return get_from_SQL()
 
 
 if __name__ == "__main__":
@@ -151,4 +201,6 @@ if __name__ == "__main__":
 
     d = Downloader("https://www.royalroad.com/fiction/114710/engineering-magic-and-kitsune")
 
-    print(d._get_url_list())
+    # print(d._get_url_list())
+
+    print(d.get_chapter("2289233")[4])

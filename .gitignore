@@ -4,3 +4,4 @@ test*
 venv
 chapter*
 TODO
+app.log
