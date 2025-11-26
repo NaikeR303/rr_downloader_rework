@@ -1,6 +1,8 @@
 import sqlite3
 import hashlib
 import requests
+import logging
+import sys
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
@@ -14,13 +16,23 @@ class Downloader:
     
     URL template: https://www.royalroad.com/fiction/{id}"""
     def __init__(self, raw_url:str):
+        # Init logging
+        def log_except_hook(excType, excValue, traceback):
+            logging.critical("Uncaught exception",
+                            exc_info=(excType, excValue, traceback))
+        sys.excepthook = log_except_hook
+
+
         # Init DB
+        logging.info("Creating and initiating DB...")
+
         db_name = "chapter_db.db"
 
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
 
         # Create tables
+        logging.info("Setting tables for DB...")
         # For foreign keys
         self.cursor.execute("PRAGMA foreign_keys = ON")
 
@@ -42,7 +54,8 @@ class Downloader:
                 chapter_id  INTEGER PRIMARY KEY,  
                 fiction_id  INTEGER NOT NULL,  
                 url         TEXT UNIQUE,              
-                date        TEXT,                   
+                date        TEXT,              
+                title,      TEXT,     
                 content     TEXT,     
 
                 FOREIGN KEY (fiction_id) REFERENCES fictions(fiction_id) ON DELETE CASCADE       
@@ -51,6 +64,7 @@ class Downloader:
         )
 
         # Checking if URL is correct and getting fiction ID
+        logging.info("Checking if given URL is correct...")
         try:
             self.fiction_id  = raw_url.split("/")[4]
 
@@ -63,34 +77,78 @@ class Downloader:
         except IndexError:
             raise IncorrectURLError
         
+        logging.info("...it is")
+
         soup = BeautifulSoup(requests.get(self.fiction_url).content, "html.parser")
 
         # Getting info
         self.author_name = soup.find("div", class_="portlet-body").find("a").text
-        self.title = soup.find("div", class_="fic-header").find("h1").text
+        self.fiction_title = soup.find("div", class_="fic-header").find("h1").text
 
+        logging.info("Writing to DB...")
         # Writing to DB
         self.cursor.execute(
             """
             INSERT OR REPLACE INTO fictions (fiction_id, url, title, author) VALUES (?, ?, ?, ?)
             """,
-            (self.fiction_id, self.fiction_url, self.title, self.author_name)
+            (self.fiction_id, self.fiction_url, self.fiction_title, self.author_name)
         )
 
         # Committing changes
         self.conn.commit()
 
 
-    def _get_url_list(self):
+    def _get_url_list(self, id_only = True):
+        logging.info("Collecting chapter URLs...")
+        logging.info(f"Only ID = {id_only}")
+
         soup = BeautifulSoup(requests.get(f"https://www.royalroad.com/fiction/{self.fiction_id}").content, "html.parser")
 
-        lis = soup.find("tbody")
-        lis = lis.find_all("tr")
+        chapter_list = [chap.find("a")['href'] for chap in soup.find("tbody").find_all("tr")]
 
-        print(lis)
+        if not id_only:
+            return chapter_list
+        else:
+            return [chap.split("/")[5] for chap in chapter_list]
+
+    def get_chapter(self, chapter_id, skip_span = True):
+        logging.info(f"Getting chapter with ID {chapter_id}...")
+
+        self.cursor.execute(
+            """
+            SELECT 1 FROM chapters WHERE chapter_id = ?
+            """,
+            (chapter_id)
+        )
+        if self.cursor.fetchone() == None:
+            logging.warning("Chapter is not in DB!")
+
+            chap_url = self.fiction_url + f"/chapter/{chapter_id}"
+            for _ in range(4):
+                try: 
+                    soup = BeautifulSoup(requests.get(chap_url).content)
+                    break
+                except:
+                    pass
+            
+            content = soup.find("div", class_="chapter-content")
+
+            for span in content.find_all("span"):
+                span.decompose()
+        else:
+            logging.info("Chapter is in DB, getting it...")
+
 
 
 if __name__ == "__main__":
+
+    open('app.log', 'w').close()
+    logging.basicConfig(level=logging.INFO, 
+                    format='[%(asctime)s | %(levelname)s] %(message)s',
+                    handlers=[logging.StreamHandler(),
+                            logging.FileHandler(filename='app.log', mode='a')])
+
+
     d = Downloader("https://www.royalroad.com/fiction/114710/engineering-magic-and-kitsune")
 
-    # d._get_url_list()
+    print(d._get_url_list())
