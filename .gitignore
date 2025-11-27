@@ -1,0 +1,7 @@
+#Trash
+__pycache__
+test*
+venv
+chapter*
+TODO
+app.log
