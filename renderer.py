@@ -37,7 +37,7 @@ class Renderer:
             name = '_'
         return name
 
-    def to_html(self, save_path, style_name, title):
+    def to_html(self, save_path, style_name, title, author):
         save_path = Path(save_path)
 
         style = """
@@ -70,25 +70,36 @@ class Renderer:
                 """
             case Styles.HTML.midnight:
                 style += """
-                    
+                body {
+                    background-color: rgb(26, 26, 26);
+                    color: gray;
+                }
                 """
             case Styles.HTML.light:
                 style += """
-                    
+                body {
+                    background-color: rgb(255, 255, 255);
+                    color: rgb(0, 0, 0);
+                }
                 """
             case Styles.HTML.dark:
                 style += """
-                    
+                body {
+                    background-color: rgb(19, 19, 19);
+                    color: rgb(207, 207, 207);
+                }
                 """
 
-        content = """
-        
+        content = f"""
+        <h1>{title}</h1>
+        <h2>By {author}</h2>
+        <br><br><br>
         """
 
         # chapter_id, fiction_id, url, date, title, content 
         for chap in self.all_chapters:
-            content += f"<h1>{chap[4]}</h1>\n"
-            content += f"<h2>{chap[3]}</h2>\n"
+            content += f"<h2>{chap[4]}</h2>\n"
+            content += f"<h3>{chap[3]}</h3>\n"
 
             content += chap[5]
             content += "<br><br><br>\n"
@@ -116,5 +127,5 @@ if __name__ == "__main__":
 
     r = Renderer(chapters)
 
-    r.to_html("/home/naiker303/Code/Python/rr_downloader_rework/test.html", Styles.HTML.antique, d.fiction_title)
+    r.to_html("/home/naiker303/Code/Python/rr_downloader_rework/test.html", Styles.HTML.midnight, d.fiction_title, d.author_name)
 
