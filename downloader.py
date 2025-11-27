@@ -121,22 +121,7 @@ class Downloader:
         else:
             return [chap.split("/")[5] for chap in chapter_list]
 
-    def get_chapter(self, chapter_id, skip_span = True):
-        # Func to get info from DB
-        def get_from_SQL():
-            req = self.conn.execute(
-                f"""
-                SELECT *
-                FROM chapters 
-                WHERE chapter_id = ?
-                """,
-                (chapter_id, )
-            )
-
-            return req.fetchone()
-
-
-
+    def load_chapter(self, chapter_id, skip_span = True):
         logging.info(f"Getting chapter with ID {chapter_id}...")
 
         req = self.conn.execute(
@@ -182,12 +167,21 @@ class Downloader:
             ) 
 
             self.conn.commit()
-            
-            return get_from_SQL()
-        else:
-            logging.info("Chapter is in DB, getting it...")
 
-            return get_from_SQL()
+        else:
+            logging.info("Chapter is already in DB...")
+
+    def get_chapters(self):
+        req = self.conn.execute(
+            f"""
+            SELECT *
+            FROM chapters 
+            WHERE fiction_id = ?
+            """,
+            (self.fiction_id, )
+        )
+
+        return req.fetchall()
 
 
 if __name__ == "__main__":

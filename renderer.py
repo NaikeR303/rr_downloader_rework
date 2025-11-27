@@ -22,8 +22,9 @@ class Renderer:
     def __init__(self, chapters):
         self.all_chapters = chapters
 
-        self.soup = BeautifulSoup(chapters)
+        # self.soup = BeautifulSoup(chapters, "html.parser")
 
+    #Thanks Kimi
     def _safe_name(name: str) -> str:
         """Return a filesystem-safe version of *name*."""
         name = name.strip(' .')
@@ -36,22 +37,74 @@ class Renderer:
             name = '_'
         return name
 
-    def to_html(self, save_path, style, title):
+    def to_html(self, save_path, style_name, title):
         save_path = Path(save_path)
 
-        match style:
-            case Styles.HTML.antique:
-                pass
-            case Styles.HTML.midnight:
-                pass
-            case Styles.HTML.light:
-                pass
-            case Styles.HTML.dark:
-                pass
+        style = """
+            h1, h2, h3 {
+                display: block;
+                width: fit-content;
+                margin: 0 auto;
+            }
+            div {
+                margin: 0% 6%;
+            }
+            img {
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+                max-width: 100%;   
+                max-height: 80vh; 
+                height: auto;     
+                width: auto;      
+            }
+        """
 
+        match style_name:
+            case Styles.HTML.antique:
+                style += """
+                body {
+                    background-color: rgb(175, 146, 109);
+                    color: #52331e
+                }
+                """
+            case Styles.HTML.midnight:
+                style += """
+                    
+                """
+            case Styles.HTML.light:
+                style += """
+                    
+                """
+            case Styles.HTML.dark:
+                style += """
+                    
+                """
+
+        content = """
+        
+        """
+
+        # chapter_id, fiction_id, url, date, title, content 
+        for chap in self.all_chapters:
+            content += f"<h1>{chap[4]}</h1>\n"
+            content += f"<h2>{chap[3]}</h2>\n"
+
+            content += chap[5]
+            content += "<br><br><br>\n"
 
         with open(save_path, "w") as file:
-            pass            
+            file.write(f"""
+                        <html>
+                            <head>
+                                <title>{title} - RoyalRoad</title>
+                                <style>{style}</style>
+                            </head>
+                            <body>
+                                {content}
+                            </body>
+                        </html>
+                        """)
 
 
 if __name__ == "__main__":
@@ -59,9 +112,9 @@ if __name__ == "__main__":
 
     d = Downloader('https://www.royalroad.com/fiction/114710/engineering-magic-and-kitsune')
 
-    chapters = [d.get_chapter(chap) for chap in d.get_url_list()]
+    chapters = d.get_chapters()
 
     r = Renderer(chapters)
 
-    r.to_txt("/home/naiker303/Code/Python/rr_downloader_rework/")
+    r.to_html("/home/naiker303/Code/Python/rr_downloader_rework/test.html", Styles.HTML.antique, d.fiction_title)
 
