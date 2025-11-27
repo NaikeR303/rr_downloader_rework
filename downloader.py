@@ -108,7 +108,7 @@ class Downloader:
         self.conn.commit()
 
 
-    def _get_url_list(self, id_only = True):
+    def get_url_list(self, id_only = True):
         logging.info("Collecting chapter URLs...")
         logging.info(f"Only ID = {id_only}")
 
@@ -203,4 +203,6 @@ if __name__ == "__main__":
 
     # print(d._get_url_list())
 
-    print(d.get_chapter("2289233")[4])
+    for l in d.get_url_list():
+        print(d.get_chapter(l)[4])
+
