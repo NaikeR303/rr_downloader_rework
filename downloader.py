@@ -165,7 +165,7 @@ class Downloader:
             if skip_span:
                 # Removing "Hey, that's not RoyalRoad!"
                 logging.info("Removing anti-piracy spans...")
-                for span in content.find_all("span"):
+                for span in content.find_all("span", recursive=False):
                     span.decompose()
 
             release_date = soup.find("time")["datetime"][0:10]
@@ -199,7 +199,7 @@ if __name__ == "__main__":
                             logging.FileHandler(filename='app.log', mode='a')])
 
 
-    d = Downloader("https://www.royalroad.com/fiction/114710/engineering-magic-and-kitsune")
+    d = Downloader("https://www.royalroad.com/fiction/98242/magical-engineering-stubbing-book-1-stubs-on-december")
 
     # print(d._get_url_list())
 
