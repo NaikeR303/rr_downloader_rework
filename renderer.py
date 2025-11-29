@@ -1,19 +1,14 @@
 from pathlib import Path
 from bs4 import BeautifulSoup
+from weasyprint import HTML
 import re
 
 
 class Styles:
-    class HTML:
-        antique = 1
-        midnight = 2
-        light = 3
-        dark = 4
-    class PDF:
-        antique = 1
-        midnight = 2
-        light = 3
-        dark = 4
+    antique = 1
+    midnight = 2
+    light = 3
+    dark = 4
 
 class Renderer:
     """
@@ -37,9 +32,7 @@ class Renderer:
             name = '_'
         return name
 
-    def to_html(self, save_path, style_name, title, author):
-        save_path = Path(save_path)
-
+    def _create_html(self, style_name: int, title: str, author: str):
         style = """
             h1, h2, h3 {
                 display: block;
@@ -61,32 +54,48 @@ class Renderer:
         """
 
         match style_name:
-            case Styles.HTML.antique:
+            case Styles.antique:
                 style += """
                 body {
                     background-color: rgb(175, 146, 109);
                     color: #52331e
                 }
+                @page {
+                    margin: 0.4in;
+                    background-color: rgb(175, 146, 109);
+                }
                 """
-            case Styles.HTML.midnight:
+            case Styles.midnight:
                 style += """
                 body {
                     background-color: rgb(26, 26, 26);
                     color: gray;
                 }
+                @page {
+                    margin: 0.4in;
+                    background-color: rgb(26, 26, 26);
+                }
                 """
-            case Styles.HTML.light:
+            case Styles.light:
                 style += """
                 body {
                     background-color: rgb(255, 255, 255);
                     color: rgb(0, 0, 0);
                 }
+                @page {
+                    margin: 0.4in;
+                    background-color: rgb(255, 255, 255);
+                }
                 """
-            case Styles.HTML.dark:
+            case Styles.dark:
                 style += """
                 body {
                     background-color: rgb(19, 19, 19);
                     color: rgb(207, 207, 207);
+                }
+                @page {
+                    margin: 0.4in;
+                    background-color: rgb(19, 19, 19);
                 }
                 """
 
@@ -104,18 +113,41 @@ class Renderer:
             content += chap[5]
             content += "<br><br><br>\n"
 
+        template = f"""
+                    <html>
+                        <head>
+                            <title>{title} - RoyalRoad</title>
+                            <style>{style}</style>
+                        </head>
+                        <body>
+                            {content}
+                        </body>
+                    </html>
+                    """
+        
+        return template
+
+
+    def to_html(self, save_path: str, style_name: int, title: str, author: str):
+        if not save_path.endswith(".html"):
+            save_path = save_path + ".html"
+
+        save_path = Path(save_path)
+
+        template = self._create_html(style_name, title, author)
+
         with open(save_path, "w") as file:
-            file.write(f"""
-                        <html>
-                            <head>
-                                <title>{title} - RoyalRoad</title>
-                                <style>{style}</style>
-                            </head>
-                            <body>
-                                {content}
-                            </body>
-                        </html>
-                        """)
+            file.write(template)
+
+    def to_pdf(self, save_path: str, style_name: int, title: str, author: str):
+        if not save_path.endswith(".pdf"):
+            save_path = save_path + ".pdf"
+
+        save_path = Path(save_path)
+
+        html = self._create_html(style_name, title, author)
+
+        HTML(string=html).write_pdf(save_path)
 
 
 if __name__ == "__main__":
@@ -127,5 +159,5 @@ if __name__ == "__main__":
 
     r = Renderer(chapters)
 
-    r.to_html("/home/naiker303/Code/Python/rr_downloader_rework/test.html", Styles.HTML.midnight, d.fiction_title, d.author_name)
+    r.to_pdf("/home/naiker303/Code/Python/rr_downloader_rework/test.html", Styles.antique, d.fiction_title, d.author_name)
 
