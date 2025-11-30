@@ -33,7 +33,7 @@ class Renderer:
             name = '_'
         return name
 
-    def _create_html(self, style_name: int, title: str, author: str, chapters: list):
+    def _create_html(self, style_name: int, title: str, author: str, chapters: list, first: bool = True):
         style = """
             h1, h2, h3 {
                 display: block;
@@ -114,16 +114,19 @@ class Renderer:
                 }
                 """
 
-        content = f"""
-        <h1>{title}</h1>
-        <h2>By {author}</h2>
-        <br><br><br>
-        """
+        if first:
+            content = f"""
+            <h1>{title}</h1>
+            <h2>By {author}</h2>
+            <br><br><br>
+            """
+        else: 
+            content = ""
 
         # chapter_id, fiction_id, url, date, title, content 
         for chap in chapters:
             content += f"<h2>{chap[4]}</h2>\n"
-            content += f"<h3>{chap[3]}</h3>\n"
+            content += f"<p style='font-weight: bold; display: block; width: fit-content; margin: 0 auto;'>{chap[3]}</p>\n"
 
             content += chap[5]
             content += "<br><br><br>\n"
@@ -164,94 +167,12 @@ class Renderer:
 
         HTML(string=html).write_pdf(save_path)
 
-    def to_epub(self, save_path: str, style_name: int, title: str, author: str):
-        style = """
-            h1, h2, h3 {
-                display: block;
-                width: fit-content;
-                margin: 0 auto;
-            }
-            div {
-                margin: 0% 6%;
-            }
-            body {
-                font-family: "Lexend", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-            }
-            img {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-                max-width: 100%;   
-                max-height: 80vh; 
-                height: auto;     
-                width: auto;      
-            }
-        """
-
-        match style_name:
-            case Styles.antique:
-                style += """
-                body {
-                    background-color: rgb(175, 146, 109);
-                    color: #52331e
-                }
-                @page {
-                    margin: 0.4in;
-                    background-color: rgb(175, 146, 109);
-                }
-                """
-            case Styles.sepia:
-                style += """
-                body {
-                    background-color: #E5CFAA;
-                    color: #404040
-                }
-                @page {
-                    margin: 0.4in;
-                    background-color: #E5CFAA;
-                }
-                """
-            case Styles.midnight:
-                style += """
-                body {
-                    background-color: rgb(26, 26, 26);
-                    color: gray;
-                }
-                @page {
-                    margin: 0.4in;
-                    background-color: rgb(26, 26, 26);
-                }
-                """
-            case Styles.light:
-                style += """
-                body {
-                    background-color: rgb(255, 255, 255);
-                    color: rgb(0, 0, 0);
-                }
-                @page {
-                    margin: 0.4in;
-                    background-color: rgb(255, 255, 255);
-                }
-                """
-            case Styles.dark:
-                style += """
-                body {
-                    background-color: rgb(19, 19, 19);
-                    color: rgb(207, 207, 207);
-                }
-                @page {
-                    margin: 0.4in;
-                    background-color: rgb(19, 19, 19);
-                }
-                """
-
-
+    def to_epub(self, save_path: str, title: str, author: str):
         if not save_path.endswith(".epub"):
             save_path = save_path + ".epub"
 
         save_path = Path(save_path)
 
-        # html = self._create_html(style_name, title, author)
         # Setting basic stuff
         book = epub.EpubBook()
         book.set_identifier(Renderer._safe_name(title))
@@ -259,18 +180,28 @@ class Renderer:
         book.set_language("en")
         book.add_author(author)
 
-        chaps = []
+        #Cover
+        html = f"""
+                <html>
+                    <body>
+                        <h1>{title}</h1>
+                        <h2>By {author}</h2>
+                    </body>
+                </html>
+                """
+        cover = epub.EpubHtml(title="Cover", file_name=f'cover.xhtml')
+        cover.set_content(html)
+        book.add_item(cover)
 
-        # Creating chapter html
+        chaps = [cover]
+
+        # Adding other chapters
         for chap in self.all_chapters:
             html = f"""
                     <html>
-                        <head>
-                            <style>{style}</style>
-                        </head>
                         <body>
-                            <h1>{chap[4]}</h1>
-                            <p style="font-weight: bold;">{chap[3]}</p>
+                            <h2>{chap[4]}</h2>
+                            <p style='font-weight: bold;'>{chap[3]}</p>
                             <br>
                             {chap[5]}
                         </body>
@@ -295,11 +226,11 @@ class Renderer:
 if __name__ == "__main__":
     from downloader import Downloader
 
-    d = Downloader('https://www.royalroad.com/fiction/114710/engineering-magic-and-kitsune')
+    d = Downloader('https://www.royalroad.com/fiction/124235/die-trying-a-roguelite-extraction-litrpg/chapter/2424538/chapter-1')
 
     chapters = d.get_chapters()
 
     r = Renderer(chapters)
 
-    r.to_epub("/home/naiker303/Общедоступные/Network/boor.epub", Styles.sepia, d.fiction_title, d.author_name)
+    r.to_epub("/home/naiker303/Общедоступные/Network/book.epub", d.fiction_title, d.author_name)
 

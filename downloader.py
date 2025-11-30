@@ -193,10 +193,10 @@ if __name__ == "__main__":
                             logging.FileHandler(filename='app.log', mode='a')])
 
 
-    d = Downloader("https://www.royalroad.com/fiction/98242/magical-engineering-stubbing-book-1-stubs-on-december")
+    d = Downloader("https://www.royalroad.com/fiction/124235/die-trying-a-roguelite-extraction-litrpg/chapter/2424538/chapter-1")
 
-    # print(d._get_url_list())
+    print(d.get_url_list())
 
-    for l in d.get_url_list():
-        print(d.get_chapter(l)[4])
+    for chap in d.get_url_list():
+        d.load_chapter(chap)
 
