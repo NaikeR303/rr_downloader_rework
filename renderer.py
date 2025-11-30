@@ -1,5 +1,5 @@
 from pathlib import Path
-from bs4 import BeautifulSoup
+from ebooklib import epub
 from weasyprint import HTML
 import re
 
@@ -9,10 +9,11 @@ class Styles:
     midnight = 2
     light = 3
     dark = 4
+    sepia = 5
 
 class Renderer:
     """
-    Give it all chaptes and then choose how to save them
+    Give it all chapters and then choose how to save them
     """
     def __init__(self, chapters):
         self.all_chapters = chapters
@@ -32,7 +33,7 @@ class Renderer:
             name = '_'
         return name
 
-    def _create_html(self, style_name: int, title: str, author: str):
+    def _create_html(self, style_name: int, title: str, author: str, chapters: list):
         style = """
             h1, h2, h3 {
                 display: block;
@@ -41,6 +42,9 @@ class Renderer:
             }
             div {
                 margin: 0% 6%;
+            }
+            body {
+                font-family: "Lexend", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
             }
             img {
                 display: block;
@@ -63,6 +67,17 @@ class Renderer:
                 @page {
                     margin: 0.4in;
                     background-color: rgb(175, 146, 109);
+                }
+                """
+            case Styles.sepia:
+                style += """
+                body {
+                    background-color: #E5CFAA;
+                    color: #404040
+                }
+                @page {
+                    margin: 0.4in;
+                    background-color: #E5CFAA;
                 }
                 """
             case Styles.midnight:
@@ -106,7 +121,7 @@ class Renderer:
         """
 
         # chapter_id, fiction_id, url, date, title, content 
-        for chap in self.all_chapters:
+        for chap in chapters:
             content += f"<h2>{chap[4]}</h2>\n"
             content += f"<h3>{chap[3]}</h3>\n"
 
@@ -134,7 +149,7 @@ class Renderer:
 
         save_path = Path(save_path)
 
-        template = self._create_html(style_name, title, author)
+        template = self._create_html(style_name, title, author, self.all_chapters)
 
         with open(save_path, "w") as file:
             file.write(template)
@@ -145,10 +160,137 @@ class Renderer:
 
         save_path = Path(save_path)
 
-        html = self._create_html(style_name, title, author)
+        html = self._create_html(style_name, title, author, self.all_chapters)
 
         HTML(string=html).write_pdf(save_path)
 
+    def to_epub(self, save_path: str, style_name: int, title: str, author: str):
+        style = """
+            h1, h2, h3 {
+                display: block;
+                width: fit-content;
+                margin: 0 auto;
+            }
+            div {
+                margin: 0% 6%;
+            }
+            body {
+                font-family: "Lexend", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+            }
+            img {
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+                max-width: 100%;   
+                max-height: 80vh; 
+                height: auto;     
+                width: auto;      
+            }
+        """
+
+        match style_name:
+            case Styles.antique:
+                style += """
+                body {
+                    background-color: rgb(175, 146, 109);
+                    color: #52331e
+                }
+                @page {
+                    margin: 0.4in;
+                    background-color: rgb(175, 146, 109);
+                }
+                """
+            case Styles.sepia:
+                style += """
+                body {
+                    background-color: #E5CFAA;
+                    color: #404040
+                }
+                @page {
+                    margin: 0.4in;
+                    background-color: #E5CFAA;
+                }
+                """
+            case Styles.midnight:
+                style += """
+                body {
+                    background-color: rgb(26, 26, 26);
+                    color: gray;
+                }
+                @page {
+                    margin: 0.4in;
+                    background-color: rgb(26, 26, 26);
+                }
+                """
+            case Styles.light:
+                style += """
+                body {
+                    background-color: rgb(255, 255, 255);
+                    color: rgb(0, 0, 0);
+                }
+                @page {
+                    margin: 0.4in;
+                    background-color: rgb(255, 255, 255);
+                }
+                """
+            case Styles.dark:
+                style += """
+                body {
+                    background-color: rgb(19, 19, 19);
+                    color: rgb(207, 207, 207);
+                }
+                @page {
+                    margin: 0.4in;
+                    background-color: rgb(19, 19, 19);
+                }
+                """
+
+
+        if not save_path.endswith(".epub"):
+            save_path = save_path + ".epub"
+
+        save_path = Path(save_path)
+
+        # html = self._create_html(style_name, title, author)
+        # Setting basic stuff
+        book = epub.EpubBook()
+        book.set_identifier(Renderer._safe_name(title))
+        book.set_title(title)
+        book.set_language("en")
+        book.add_author(author)
+
+        chaps = []
+
+        # Creating chapter html
+        for chap in self.all_chapters:
+            html = f"""
+                    <html>
+                        <head>
+                            <style>{style}</style>
+                        </head>
+                        <body>
+                            <h1>{chap[4]}</h1>
+                            <p style="font-weight: bold;">{chap[3]}</p>
+                            <br>
+                            {chap[5]}
+                        </body>
+                    </html>
+                    """
+
+            # Creating chapters
+            chapter = epub.EpubHtml(title=chap[4], file_name=f'{Renderer._safe_name(chap[4])}.xhtml')
+            chapter.set_content(html)
+
+            chaps.append(chapter)
+
+            # Add chapter to the book
+            book.add_item(chapter)
+
+        book.spine = ['nav'] + chaps
+
+        book.toc = chaps
+
+        epub.write_epub(save_path, book)
 
 if __name__ == "__main__":
     from downloader import Downloader
@@ -159,5 +301,5 @@ if __name__ == "__main__":
 
     r = Renderer(chapters)
 
-    r.to_pdf("/home/naiker303/Code/Python/rr_downloader_rework/test.html", Styles.antique, d.fiction_title, d.author_name)
+    r.to_epub("/home/naiker303/Общедоступные/Network/boor.epub", Styles.sepia, d.fiction_title, d.author_name)
 
