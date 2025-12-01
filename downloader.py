@@ -121,22 +121,7 @@ class Downloader:
         else:
             return [chap.split("/")[5] for chap in chapter_list]
 
-    def get_chapter(self, chapter_id, skip_span = True):
-        # Func to get info from DB
-        def get_from_SQL():
-            req = self.conn.execute(
-                f"""
-                SELECT *
-                FROM chapters 
-                WHERE chapter_id = ?
-                """,
-                (chapter_id, )
-            )
-
-            return req.fetchone()
-
-
-
+    def load_chapter(self, chapter_id, skip_span = True):
         logging.info(f"Getting chapter with ID {chapter_id}...")
 
         req = self.conn.execute(
@@ -165,7 +150,7 @@ class Downloader:
             if skip_span:
                 # Removing "Hey, that's not RoyalRoad!"
                 logging.info("Removing anti-piracy spans...")
-                for span in content.find_all("span"):
+                for span in content.find_all("span", recursive=False):
                     span.decompose()
 
             release_date = soup.find("time")["datetime"][0:10]
@@ -182,12 +167,21 @@ class Downloader:
             ) 
 
             self.conn.commit()
-            
-            return get_from_SQL()
-        else:
-            logging.info("Chapter is in DB, getting it...")
 
-            return get_from_SQL()
+        else:
+            logging.info("Chapter is already in DB...")
+
+    def get_chapters(self):
+        req = self.conn.execute(
+            f"""
+            SELECT *
+            FROM chapters 
+            WHERE fiction_id = ?
+            """,
+            (self.fiction_id, )
+        )
+
+        return req.fetchall()
 
 
 if __name__ == "__main__":
@@ -199,10 +193,10 @@ if __name__ == "__main__":
                             logging.FileHandler(filename='app.log', mode='a')])
 
 
-    d = Downloader("https://www.royalroad.com/fiction/114710/engineering-magic-and-kitsune")
+    d = Downloader("https://www.royalroad.com/fiction/124235/die-trying-a-roguelite-extraction-litrpg/chapter/2424538/chapter-1")
 
-    # print(d._get_url_list())
+    print(d.get_url_list())
 
-    for l in d.get_url_list():
-        print(d.get_chapter(l)[4])
+    for chap in d.get_url_list():
+        d.load_chapter(chap)
 
