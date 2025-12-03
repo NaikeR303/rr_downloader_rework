@@ -40,6 +40,15 @@ QPushButton{
 	padding: 5px 5px;
     font-size: 16px;
     border-radius: 12px;
+
+	border: 0px solid rgb(255, 120, 0);
+}
+
+QPushButton[state=&quot;selected&quot;]{
+	border:  2px solid rgb(255, 120, 0);
+}
+QPushButton[state=&quot;&quot;]{
+	border:  0px solid rgb(255, 120, 0);
 }</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
@@ -83,6 +92,9 @@ QPushButton{
           <kerning>true</kerning>
          </font>
         </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
         <property name="frameShape">
          <enum>QFrame::Shape::StyledPanel</enum>
         </property>
@@ -111,13 +123,7 @@ QPushButton{
             <string notr="true">QWidget{
 	background-color: #282828;
 }
-
-QPushButton{
-	background-color: red;
-	padding: 5px 5px;
-    font-size: 16px;
-    border-radius: 12px;
-}</string>
+</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::Shape::StyledPanel</enum>

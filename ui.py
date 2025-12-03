@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'mainlTttua.ui'
+## Form generated from reading UI file 'mainAKjcjq.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -48,6 +48,15 @@ class Ui_Form(object):
 "	padding: 5px 5px;\n"
 "    font-size: 16px;\n"
 "    border-radius: 12px;\n"
+"\n"
+"	border: 0px solid rgb(255, 120, 0);\n"
+"}\n"
+"\n"
+"QPushButton[state=\"selected\"]{\n"
+"	border:  2px solid rgb(255, 120, 0);\n"
+"}\n"
+"QPushButton[state=\"\"]{\n"
+"	border:  0px solid rgb(255, 120, 0);\n"
 "}")
         self.verticalLayout = QVBoxLayout(self.frame)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -75,6 +84,7 @@ class Ui_Form(object):
         font1.setFamilies([u"Monospace"])
         font1.setKerning(True)
         self.frame1.setFont(font1)
+        self.frame1.setStyleSheet(u"")
         self.frame1.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame1.setFrameShadow(QFrame.Shadow.Raised)
         self.horizontalLayout = QHBoxLayout(self.frame1)
@@ -86,13 +96,7 @@ class Ui_Form(object):
         self.frame_2.setStyleSheet(u"QWidget{\n"
 "	background-color: #282828;\n"
 "}\n"
-"\n"
-"QPushButton{\n"
-"	background-color: red;\n"
-"	padding: 5px 5px;\n"
-"    font-size: 16px;\n"
-"    border-radius: 12px;\n"
-"}")
+"")
         self.frame_2.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame_2.setFrameShadow(QFrame.Shadow.Raised)
         self.verticalLayout_2 = QVBoxLayout(self.frame_2)
