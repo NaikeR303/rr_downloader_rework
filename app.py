@@ -1,37 +1,50 @@
 import sys
 import logging
 import os
+from enum import Enum, auto
 from threading import Thread
 from PySide6.QtCore import QTimer, QObject, QSize, Signal
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, QPushButton
 from downloader import Downloader
 from ui import Ui_Form
 
-class Styles:
-    light = 1
-    dark = 2
-    midnight = 3
-    sepia = 4
+class Styles(Enum):
+    LIGHT = auto()
+    DARK = auto()
+    MIDNIGHT = auto()
+    SEPIA = auto()
 
-class Filetypes:
-    txt = 1
-    pdf = 2
-    html = 3
-    epub = 4
+class Filetypes(Enum):
+    TXT = auto()
+    PDF = auto()
+    HTML = auto()
+    EPUB = auto()
 
 class RoyalRoadDownloader(QDialog, Ui_Form):
+    progress_signal = Signal(str, int)
+    finish_signal = Signal()
+
     def __init__(self):
         super().__init__()
         self.setupUi(self)    
 
         #Logging
+        open('app.log', 'w').close()
+        logging.basicConfig(level=logging.INFO, 
+                        format='[%(asctime)s | %(levelname)s] %(message)s',
+                        handlers=[logging.StreamHandler(),
+                                logging.FileHandler(filename='app.log', mode='a')])
+
         def log_except_hook(excType, excValue, traceback):
             logging.critical("Uncaught exception",
                             exc_info=(excType, excValue, traceback))
         sys.excepthook = log_except_hook
 
+        logging.info("App started!")
+
         #Variables
         self.book_style = None
+        self.book_filetype = None
 
         #Basic setup
         self.url_box.setText("https://www.royalroad.com/fiction/114710/engineering-magic-and-kitsune")
@@ -41,12 +54,19 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
         self.midnight_butt.clicked.connect(self.switch_style_buttons)
         self.sepia_butt.clicked.connect(self.switch_style_buttons)
 
-        
+        self.html_butt.clicked.connect(self.switch_filetype_buttons)
+        self.pdf_butt.clicked.connect(self.switch_filetype_buttons)
+        self.epub_butt.clicked.connect(self.switch_filetype_buttons)
+
+        self.progress_signal.connect(self.update_info)
 
         #Setting first buttons
         self.midnight_butt.click()
+        self.html_butt.click()
 
         self.setFixedSize(QSize(560, 400))
+
+        logging.info("Initialised app!")
 
     def switch_style_buttons(self):
         buttons = [
@@ -67,17 +87,60 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
         for b in buttons:
             b.style().polish(b)
 
+        #Setting 
+        match button:
+            case self.rr_light_butt:
+                self.book_style = Styles.LIGHT
+                logging.info(f"Pressed {Styles.LIGHT} button...")
+            case self.rr_dark_butt:
+                self.book_style = Styles.DARK
+                logging.info(f"Pressed {Styles.DARK} button...")
+            case self.midnight_butt:
+                self.book_style = Styles.MIDNIGHT
+                logging.info(f"Pressed {Styles.MIDNIGHT} button...")
+            case self.sepia_butt:
+                self.book_style = Styles.SEPIA
+                logging.info(f"Pressed {Styles.SEPIA} button...")
 
-        # match button:
-        #     case self.rr_light_butt:
-        #         print("hello")
-        #     case self.rr_dark_butt:
-        #         print("world")
-        #     case self.midnight_butt:
-        #         print("!!!")
-        #     case self.sepia_butt:
-        #         print("!!")
+    def switch_filetype_buttons(self):
+        buttons = [
+            self.html_butt,
+            self.pdf_butt,
+            self.epub_butt,
+        ]
 
+        for b in buttons:
+            b.setProperty("state", "")
+
+        button = self.sender()
+
+        button.setProperty("state", "selected")
+
+        #Updating buttons
+        for b in buttons:
+            b.style().polish(b)
+
+        #Setting 
+        match button:
+            case self.html_butt:
+                self.book_filetype = Filetypes.HTML
+                logging.info(f"Pressed {Filetypes.HTML} button...")
+            case self.pdf_butt:
+                self.book_filetype = Filetypes.PDF
+                logging.info(f"Pressed {Filetypes.PDF} button...")
+            case self.epub_butt:
+                self.book_filetype = Filetypes.EPUB
+                logging.info(f"Pressed {Filetypes.EPUB} button...")
+
+    def download(self):
+        logging.info("Started downloading!")
+        logging.info(self.url_box.text())
+        
+        downloader = Downloader(self.url_box.text())
+
+    def update_info(self, message, number):
+        self.progressBar.setValue(number)
+        self.progressBar.setFormat(f"{message} - %p%")
 #Main
 app = QApplication(sys.argv)
 
