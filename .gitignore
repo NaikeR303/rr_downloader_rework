@@ -5,3 +5,8 @@ venv
 chapter*
 TODO
 app.log
+
+#Books
+*.html
+*.pdf
+*.epub
