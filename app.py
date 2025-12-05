@@ -1,7 +1,5 @@
 import sys
 import logging
-import os
-import time
 from enum import Enum, auto
 from threading import Thread
 from PySide6.QtCore import QTimer, QObject, QSize, Signal
@@ -143,9 +141,9 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
 
         for i, chap in enumerate(url_list):
             downloader.load_chapter(chap)
-            self.progress_signal.emit("Loading chapters", (i / len(url_list)) * 90)
+            self.progress_signal.emit("Loading chapters", (i / len(url_list)) * 97)
 
-        self.progress_signal.emit("Giving chapters", 95)
+        self.progress_signal.emit("Giving chapters", 98)
         
         renderer = Renderer(downloader.get_chapters())
 
@@ -162,6 +160,10 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
                 renderer.to_epub(save_path, downloader.fiction_title, downloader.author_name)
 
         self.progress_signal.emit("DONE!", 100)
+
+        self.finish_signal.emit()
+
+        logging.info("Finished!")
 
 
     def update_info(self, message, number):
