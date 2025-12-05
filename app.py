@@ -56,6 +56,7 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
         self.epub_butt.clicked.connect(self.switch_filetype_buttons)
 
         self.progress_signal.connect(self.update_info)
+        self.finish_signal.connect(lambda: QMessageBox.information(self, "Done", "Program finished downloading book!"))
 
         self.download_butt.clicked.connect(lambda: Thread(target=self.download).start())
 
@@ -64,6 +65,7 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
         self.html_butt.click()
 
         self.setFixedSize(QSize(560, 400))
+        self.progressBar.setValue(0)
 
         logging.info("Initialised app!")
 
@@ -164,7 +166,6 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
         self.finish_signal.emit()
 
         logging.info("Finished!")
-
 
     def update_info(self, message, number):
         self.progressBar.setValue(number)
