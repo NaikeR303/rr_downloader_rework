@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'mainlTttua.ui'
+## Form generated from reading UI file 'mainnhTVTA.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -48,6 +48,15 @@ class Ui_Form(object):
 "	padding: 5px 5px;\n"
 "    font-size: 16px;\n"
 "    border-radius: 12px;\n"
+"\n"
+"	border: 0px solid rgb(255, 120, 0);\n"
+"}\n"
+"\n"
+"QPushButton[state=\"selected\"]{\n"
+"	border:  2px solid rgb(255, 120, 0);\n"
+"}\n"
+"QPushButton[state=\"\"]{\n"
+"	border:  0px solid rgb(255, 120, 0);\n"
 "}")
         self.verticalLayout = QVBoxLayout(self.frame)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -75,6 +84,7 @@ class Ui_Form(object):
         font1.setFamilies([u"Monospace"])
         font1.setKerning(True)
         self.frame1.setFont(font1)
+        self.frame1.setStyleSheet(u"")
         self.frame1.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame1.setFrameShadow(QFrame.Shadow.Raised)
         self.horizontalLayout = QHBoxLayout(self.frame1)
@@ -86,13 +96,7 @@ class Ui_Form(object):
         self.frame_2.setStyleSheet(u"QWidget{\n"
 "	background-color: #282828;\n"
 "}\n"
-"\n"
-"QPushButton{\n"
-"	background-color: red;\n"
-"	padding: 5px 5px;\n"
-"    font-size: 16px;\n"
-"    border-radius: 12px;\n"
-"}")
+"")
         self.frame_2.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame_2.setFrameShadow(QFrame.Shadow.Raised)
         self.verticalLayout_2 = QVBoxLayout(self.frame_2)
@@ -209,29 +213,29 @@ class Ui_Form(object):
 
         self.verticalLayout_3.addWidget(self.label_4)
 
-        self.pushButton_6 = QPushButton(self.frame_3)
-        self.pushButton_6.setObjectName(u"pushButton_6")
-        sizePolicy1.setHeightForWidth(self.pushButton_6.sizePolicy().hasHeightForWidth())
-        self.pushButton_6.setSizePolicy(sizePolicy1)
-        self.pushButton_6.setStyleSheet(u"")
+        self.html_butt = QPushButton(self.frame_3)
+        self.html_butt.setObjectName(u"html_butt")
+        sizePolicy1.setHeightForWidth(self.html_butt.sizePolicy().hasHeightForWidth())
+        self.html_butt.setSizePolicy(sizePolicy1)
+        self.html_butt.setStyleSheet(u"")
 
-        self.verticalLayout_3.addWidget(self.pushButton_6)
+        self.verticalLayout_3.addWidget(self.html_butt)
 
-        self.pushButton_5 = QPushButton(self.frame_3)
-        self.pushButton_5.setObjectName(u"pushButton_5")
-        sizePolicy1.setHeightForWidth(self.pushButton_5.sizePolicy().hasHeightForWidth())
-        self.pushButton_5.setSizePolicy(sizePolicy1)
-        self.pushButton_5.setStyleSheet(u"")
+        self.pdf_butt = QPushButton(self.frame_3)
+        self.pdf_butt.setObjectName(u"pdf_butt")
+        sizePolicy1.setHeightForWidth(self.pdf_butt.sizePolicy().hasHeightForWidth())
+        self.pdf_butt.setSizePolicy(sizePolicy1)
+        self.pdf_butt.setStyleSheet(u"")
 
-        self.verticalLayout_3.addWidget(self.pushButton_5)
+        self.verticalLayout_3.addWidget(self.pdf_butt)
 
-        self.pushButton_7 = QPushButton(self.frame_3)
-        self.pushButton_7.setObjectName(u"pushButton_7")
-        sizePolicy1.setHeightForWidth(self.pushButton_7.sizePolicy().hasHeightForWidth())
-        self.pushButton_7.setSizePolicy(sizePolicy1)
-        self.pushButton_7.setStyleSheet(u"")
+        self.epub_butt = QPushButton(self.frame_3)
+        self.epub_butt.setObjectName(u"epub_butt")
+        sizePolicy1.setHeightForWidth(self.epub_butt.sizePolicy().hasHeightForWidth())
+        self.epub_butt.setSizePolicy(sizePolicy1)
+        self.epub_butt.setStyleSheet(u"")
 
-        self.verticalLayout_3.addWidget(self.pushButton_7)
+        self.verticalLayout_3.addWidget(self.epub_butt)
 
 
         self.horizontalLayout.addWidget(self.frame_3)
@@ -291,9 +295,9 @@ class Ui_Form(object):
         self.midnight_butt.setText(QCoreApplication.translate("Form", u"MIDNIGHT", None))
         self.sepia_butt.setText(QCoreApplication.translate("Form", u"SEPIA", None))
         self.label_4.setText(QCoreApplication.translate("Form", u"CHOOSE FORMAT", None))
-        self.pushButton_6.setText(QCoreApplication.translate("Form", u"HTML", None))
-        self.pushButton_5.setText(QCoreApplication.translate("Form", u"PDF", None))
-        self.pushButton_7.setText(QCoreApplication.translate("Form", u"EPUB", None))
+        self.html_butt.setText(QCoreApplication.translate("Form", u"HTML", None))
+        self.pdf_butt.setText(QCoreApplication.translate("Form", u"PDF", None))
+        self.epub_butt.setText(QCoreApplication.translate("Form", u"EPUB", None))
         self.download_butt.setText(QCoreApplication.translate("Form", u"DOWNLOAD", None))
     # retranslateUi
 

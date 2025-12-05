@@ -1,15 +1,16 @@
 from pathlib import Path
 from ebooklib import epub
 from weasyprint import HTML
+from enum import Enum, auto
 import re
 
 
-class Styles:
-    antique = 1
-    midnight = 2
-    light = 3
-    dark = 4
-    sepia = 5
+class Styles(Enum):
+    ANTIQUE = auto()
+    LIGHT = auto()
+    DARK = auto()
+    MIDNIGHT = auto()
+    SEPIA = auto()
 
 class Renderer:
     """
@@ -58,7 +59,7 @@ class Renderer:
         """
 
         match style_name:
-            case Styles.antique:
+            case Styles.ANTIQUE:
                 style += """
                 body {
                     background-color: rgb(175, 146, 109);
@@ -69,7 +70,7 @@ class Renderer:
                     background-color: rgb(175, 146, 109);
                 }
                 """
-            case Styles.sepia:
+            case Styles.SEPIA:
                 style += """
                 body {
                     background-color: #E5CFAA;
@@ -80,7 +81,7 @@ class Renderer:
                     background-color: #E5CFAA;
                 }
                 """
-            case Styles.midnight:
+            case Styles.MIDNIGHT:
                 style += """
                 body {
                     background-color: rgb(26, 26, 26);
@@ -91,7 +92,7 @@ class Renderer:
                     background-color: rgb(26, 26, 26);
                 }
                 """
-            case Styles.light:
+            case Styles.LIGHT:
                 style += """
                 body {
                     background-color: rgb(255, 255, 255);
@@ -102,7 +103,7 @@ class Renderer:
                     background-color: rgb(255, 255, 255);
                 }
                 """
-            case Styles.dark:
+            case Styles.DARK:
                 style += """
                 body {
                     background-color: rgb(19, 19, 19);
