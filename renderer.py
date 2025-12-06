@@ -47,6 +47,8 @@ class Renderer:
             }
             body {
                 font-family: "Lexend", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+                padding: 1cm;
             }
             img {
                 display: block;
@@ -174,11 +176,12 @@ class Renderer:
 
         cfg = pdfkit.configuration(wkhtmltopdf=wk_path)   # or full path
 
-        pdfkit.from_string(html, save_path, configuration=cfg, options={'--page-size': 'A4',
-                                                                    '--margin-top': '0',
-                                                                    '--margin-bottom': '0',
-                                                                    '--margin-left': '0',
-                                                                    '--margin-right': '0'})
+        pdfkit.from_string(html, save_path, configuration=cfg, options={'encoding': 'UTF-8',
+                                                                        '--page-size': 'A4',
+                                                                        '--margin-top': '0',
+                                                                        '--margin-bottom': '0',
+                                                                        '--margin-left': '0',
+                                                                        '--margin-right': '0'})
 
     def to_epub(self, save_path: str, title: str, author: str):
         if not save_path.endswith(".epub"):
