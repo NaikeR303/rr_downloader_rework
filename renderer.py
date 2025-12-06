@@ -158,7 +158,7 @@ class Renderer:
 
         template = self._create_html(style_name, title, author, self.all_chapters)
 
-        with open(save_path, "w") as file:
+        with open(save_path, "w", encoding='utf-8') as file:
             file.write(template)
 
     def to_pdf(self, save_path: str, style_name: int, title: str, author: str):
@@ -170,9 +170,9 @@ class Renderer:
         html = self._create_html(style_name, title, author, self.all_chapters)
 
         if platform.system() == "Windows":
-            wk_path = "wkhtmltopdf/win_bin/wkhtmltopdf.exe"
+            wk_path = "wkhtmltopdf/wkhtmltopdf.exe"
         else:
-            wk_path = "wkhtmltopdf/lin_bin/wkhtmltopdf"
+            wk_path = "wkhtmltopdf/wkhtmltopdf"
 
         cfg = pdfkit.configuration(wkhtmltopdf=wk_path)   # or full path
 
