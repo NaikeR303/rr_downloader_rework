@@ -1,7 +1,8 @@
 from pathlib import Path
 from ebooklib import epub
-from weasyprint import HTML
 from enum import Enum, auto
+import platform
+import pdfkit
 import re
 
 
@@ -46,6 +47,8 @@ class Renderer:
             }
             body {
                 font-family: "Lexend", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+                padding: 1cm;
             }
             img {
                 display: block;
@@ -166,7 +169,19 @@ class Renderer:
 
         html = self._create_html(style_name, title, author, self.all_chapters)
 
-        HTML(string=html).write_pdf(save_path)
+        if platform.system() == "Windows":
+            wk_path = "wkhtmltopdf/win_bin/wkhtmltopdf.exe"
+        else:
+            wk_path = "wkhtmltopdf/lin_bin/wkhtmltopdf"
+
+        cfg = pdfkit.configuration(wkhtmltopdf=wk_path)   # or full path
+
+        pdfkit.from_string(html, save_path, configuration=cfg, options={'encoding': 'UTF-8',
+                                                                        '--page-size': 'A4',
+                                                                        '--margin-top': '0',
+                                                                        '--margin-bottom': '0',
+                                                                        '--margin-left': '0',
+                                                                        '--margin-right': '0'})
 
     def to_epub(self, save_path: str, title: str, author: str):
         if not save_path.endswith(".epub"):
@@ -233,5 +248,7 @@ if __name__ == "__main__":
 
     r = Renderer(chapters)
 
-    r.to_epub("/home/naiker303/Общедоступные/Network/book.epub", d.fiction_title, d.author_name)
+    r.to_pdf("book.pdf", Styles.MIDNIGHT, d.fiction_title, d.author_name)
+
+    r.to_html("book.html", Styles.MIDNIGHT, d.fiction_title, d.author_name)
 
