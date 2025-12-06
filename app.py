@@ -20,6 +20,7 @@ class Filetypes(Enum):
 class RoyalRoadDownloader(QDialog, Ui_Form):
     progress_signal = Signal(str, int)
     finish_signal = Signal()
+    switch_download_button = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -57,8 +58,10 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
 
         self.progress_signal.connect(self.update_info)
         self.finish_signal.connect(lambda: QMessageBox.information(self, "Done", "Program finished downloading book!"))
+        self.switch_download_button.connect(lambda state: self.download_butt.setEnabled(state))
 
         self.download_butt.clicked.connect(lambda: Thread(target=self.download).start())
+
 
         #Setting first buttons
         self.midnight_butt.click()
@@ -137,6 +140,8 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
         logging.info("Started downloading!")
         logging.info(self.url_box.text())
         
+        self.switch_download_button.emit(False)
+
         downloader = Downloader(self.url_box.text())
 
         url_list = downloader.get_url_list()
@@ -164,6 +169,8 @@ class RoyalRoadDownloader(QDialog, Ui_Form):
         self.progress_signal.emit("DONE!", 100)
 
         self.finish_signal.emit()
+
+        self.switch_download_button.emit(True)
 
         logging.info("Finished!")
 
