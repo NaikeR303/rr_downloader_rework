@@ -2,9 +2,19 @@
 __pycache__
 test*
 venv
+win_venv
 chapter*
 TODO
 app.log
+
+#Compile
+*.bat
+*.sh
+
+#build
+build
+dist
+*.spec
 
 #Books
 *.html
