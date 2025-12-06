@@ -22,7 +22,7 @@ Other themes may be added in the future if requested.
 - Python 3.10 or higher
 - Required Python packages:
   - BeautifulSoup4
-  - WeasyPrint
+  - pdfkit
   - Ebooklib
   - Requests
   - PySide6 (Qt for Python)
